@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ro.isdc.wro.manager.factory.WroManagerFactory;
+import ro.isdc.wro.model.factory.WroModelFactory;
 
 
 /**
@@ -80,6 +81,10 @@ public final class WroConfiguration
    */
   private String wroManagerClassName;
   /**
+   * Fully qualified class name of the {@link WroModelFactory} implementation.
+   */
+  private String wroModelClassName;
+  /**
    * Encoding to use when reading resources.
    */
   private String encoding = DEFAULT_ENCODING;
@@ -115,6 +120,34 @@ public final class WroConfiguration
    * When this flag is false, the minimization will be suppressed for all resources. This flag is enabled by default.
    */
   private boolean minimizeEnabled = true;
+  /**
+   * When this flag is true, the group name will be the request URI (start with "/")
+   */
+  private boolean useURIAsGroupName = false;
+  /**
+   * Specified the WroModel definition file path.
+   */
+  private String modelDefinitionFile;
+  /**
+   * When this flag is true, the WroModel will be recreated when WroModel defintion file was changed.
+   */
+  private boolean modelUpdateWhenDefFileChanged = false;
+  /**
+   * When this flag is true, the resource will be updated when it was changed.
+   */
+  private boolean resourceUpdateWhenChanged = false;
+  /**
+   * When this flag is true and {@link #useURIAsGroupName}==true , group will not be created for the filter resource
+   */
+  private boolean createGroupForFilterResource = false;
+  /**
+   * The concat uri suffix: cjc means Concat JS or CSS.
+   */
+  private String resourceConcatUriSuffix = ".cjc";
+  /**
+   * The splitter of concated resources.
+   */
+  private String resourceConcatSplitter = ",";
   /**
    * Listeners for the change of cache & model period properties.
    */
@@ -347,6 +380,21 @@ public final class WroConfiguration
   }
 
   /**
+   * @return the wroModelClassName
+   */
+  public String getWroModelClassName() {
+    return this.wroModelClassName;
+  }
+
+  /**
+   * @param wroModelClassName
+   *          the wroManagerClassName to set
+   */
+  public void setWroModelClassName(final String wroModelClassName) {
+    this.wroModelClassName = wroModelClassName;
+  }
+
+  /**
    * @return the mbeanName
    */
   public String getMbeanName() {
@@ -454,6 +502,62 @@ public final class WroConfiguration
 
   public void setMinimizeEnabled(final boolean minimizeEnabled) {
     this.minimizeEnabled = minimizeEnabled;
+  }
+
+  public void setUseURIAsGroupName(boolean useURI) {
+    this.useURIAsGroupName = useURI;
+  }
+
+  public boolean isUseURIAsGroupName() {
+    return this.useURIAsGroupName;
+  }
+
+  public void setModelDefinitionFile(String modelDefinitionFile) {
+    this.modelDefinitionFile = modelDefinitionFile;
+  }
+
+  public String getModelDefnitionFile() {
+    return this.modelDefinitionFile;
+  }
+
+  public void setModelUpdateWhenDefFileChanged(boolean updateWhenChanged) {
+    this.modelUpdateWhenDefFileChanged = updateWhenChanged;
+  }
+
+  public boolean isModelUpdateWhenDefFileChanged() {
+    return this.modelUpdateWhenDefFileChanged;
+  }
+
+  public void setResourceUpdateWhenChanged(boolean updateWhenChanged) {
+    this.resourceUpdateWhenChanged = updateWhenChanged;
+  }
+
+  public boolean isResourceUpdateWhenChanged() {
+    return this.resourceUpdateWhenChanged;
+  }
+
+  public void setCreateGroupForFilterResource(boolean createGroup) {
+    this.createGroupForFilterResource = createGroup;
+  }
+
+  public boolean isCreateGroupForFilterResource() {
+    return this.useURIAsGroupName && this.createGroupForFilterResource;
+  }
+
+  public void setResourceConcatUriSuffix(String suffix) {
+    this.resourceConcatUriSuffix = suffix;
+  }
+
+  public String getResourceConcatUriSuffix() {
+    return this.resourceConcatUriSuffix;
+  }
+
+  public void setResourceConcatSplitter(String splitter) {
+    this.resourceConcatSplitter = splitter;
+  }
+
+  public String getResourceConcatSplitter() {
+    return this.resourceConcatSplitter;
   }
 
   /**

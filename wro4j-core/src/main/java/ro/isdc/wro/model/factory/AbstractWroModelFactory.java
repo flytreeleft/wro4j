@@ -3,14 +3,14 @@
  */
 package ro.isdc.wro.model.factory;
 
-import java.io.IOException;
-import java.io.InputStream;
-
-import javax.servlet.ServletContext;
-
 import ro.isdc.wro.WroRuntimeException;
 import ro.isdc.wro.config.ReadOnlyContext;
 import ro.isdc.wro.model.group.Inject;
+
+import javax.servlet.ServletContext;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 
 /**
@@ -24,6 +24,8 @@ public abstract class AbstractWroModelFactory
     implements WroModelFactory {
   @Inject
   private ReadOnlyContext context;
+
+  private long resourceTimestamp;
   
   /**
    * Override this method, in order to provide different xml definition file name.
@@ -40,7 +42,7 @@ public abstract class AbstractWroModelFactory
       throw new WroRuntimeException(
           "No servletContext is available. Probably you are running this code outside of the request cycle!");
     }
-    final String resourceLocation = "/WEB-INF/" + getDefaultModelFilename();
+    final String resourceLocation = getResourceLocation();
     final InputStream stream = servletContext.getResourceAsStream(resourceLocation);
     if (stream == null) {
       throw new IOException("Invalid resource requested: " + resourceLocation);
@@ -58,5 +60,32 @@ public abstract class AbstractWroModelFactory
    */
   public void destroy() {
   }
-  
+
+  public boolean isExpired() {
+    final ServletContext servletContext = context.getServletContext();
+    if (servletContext == null) {
+      return false;
+    }
+
+    final String resourceLocation = getResourceLocation();
+    String path = servletContext.getRealPath(resourceLocation);
+    if (null == path) {
+      return false;
+    } else {
+      File file = new File(path);
+
+      if (!file.exists()) {
+        return false;
+      } else {
+        long oldTimestamp = this.resourceTimestamp;
+        this.resourceTimestamp = file.lastModified();
+
+        return this.resourceTimestamp > oldTimestamp;
+      }
+    }
+  }
+
+  protected String getResourceLocation() {
+    return "/WEB-INF/" + getDefaultModelFilename();
+  }
 }

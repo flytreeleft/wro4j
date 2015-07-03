@@ -184,6 +184,10 @@ public abstract class AbstractTestLinterMojo {
 
         public void destroy() {
         }
+
+        public boolean isExpired() {
+          return false;
+        }
       };
     }
   }

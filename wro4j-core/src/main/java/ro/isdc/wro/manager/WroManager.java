@@ -323,6 +323,10 @@ public class WroManager
 
     public void destroy() {
     }
+
+    public boolean isExpired() {
+      return false;
+    }
   }
 
   public static class Builder {

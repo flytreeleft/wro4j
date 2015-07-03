@@ -218,6 +218,16 @@ public final class Group {
     }
   }
 
+  /** @return true if the group contains expired resource */
+  public final boolean containsExpiredResource() {
+    for (final Resource resource : resources) {
+      if (resource.isExpired()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /**
    * {@inheritDoc}
    */

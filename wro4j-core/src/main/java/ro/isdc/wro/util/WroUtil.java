@@ -299,6 +299,10 @@ public final class WroUtil {
 
       public void destroy() {
       }
+
+      public boolean isExpired() {
+        return false;
+      }
     };
   }
 

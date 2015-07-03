@@ -4,6 +4,7 @@
 package ro.isdc.wro.model.factory;
 
 import ro.isdc.wro.model.WroModel;
+import ro.isdc.wro.util.ExpiredObject;
 import ro.isdc.wro.util.ObjectFactory;
 
 
@@ -13,7 +14,7 @@ import ro.isdc.wro.util.ObjectFactory;
  * @author Alex Objelean
  * @created Created on Oct 30, 2008
  */
-public interface WroModelFactory extends ObjectFactory<WroModel> {
+public interface WroModelFactory extends ExpiredObject, ObjectFactory<WroModel> {
   /**
    * Called to indicate that the factory is being taken out of service.
    */

@@ -3,15 +3,11 @@
  */
 package ro.isdc.wro.manager.factory;
 
-import java.util.Map;
-import java.util.Properties;
-
-import javax.servlet.FilterConfig;
-
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import ro.isdc.wro.WroRuntimeException;
 import ro.isdc.wro.cache.CacheKey;
 import ro.isdc.wro.cache.CacheStrategy;
 import ro.isdc.wro.cache.CacheValue;
@@ -19,6 +15,7 @@ import ro.isdc.wro.cache.ConfigurableCacheStrategy;
 import ro.isdc.wro.config.Context;
 import ro.isdc.wro.config.factory.FilterConfigWroConfigurationFactory;
 import ro.isdc.wro.config.factory.ServletContextPropertyWroConfigurationFactory;
+import ro.isdc.wro.config.jmx.ConfigConstants;
 import ro.isdc.wro.model.factory.ConfigurableModelFactory;
 import ro.isdc.wro.model.factory.WroModelFactory;
 import ro.isdc.wro.model.resource.locator.UriLocator;
@@ -34,6 +31,10 @@ import ro.isdc.wro.model.resource.support.hash.ConfigurableHashStrategy;
 import ro.isdc.wro.model.resource.support.hash.HashStrategy;
 import ro.isdc.wro.model.resource.support.naming.ConfigurableNamingStrategy;
 import ro.isdc.wro.model.resource.support.naming.NamingStrategy;
+
+import javax.servlet.FilterConfig;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -162,14 +163,34 @@ public class ConfigurableWroManagerFactory extends BaseWroManagerFactory {
 
   @Override
   protected WroModelFactory newModelFactory() {
-    return new ConfigurableModelFactory() {
-      @Override
-      protected Properties newProperties() {
-        final Properties props = new Properties();
-        updatePropertiesWithConfiguration(props, ConfigurableModelFactory.KEY);
-        return props;
+    final Properties properties = getConfigProperties();
+    final String wroModelClassName = properties.getProperty(ConfigConstants.modelFactoryClassName.name());
+    if (StringUtils.isEmpty(wroModelClassName)) {
+      // If no context param was specified we return the default factory
+      return new ConfigurableModelFactory() {
+        @Override
+        protected Properties newProperties() {
+          final Properties props = new Properties();
+          updatePropertiesWithConfiguration(props, ConfigurableModelFactory.KEY);
+          return props;
+        }
+      };
+    } else {
+      // Try to find the specified factory class
+      Class<?> factoryClass = null;
+      try {
+        factoryClass = Thread.currentThread().getContextClassLoader().loadClass(wroModelClassName);
+        // Instantiate the factory
+        final WroModelFactory factory = (WroModelFactory)factoryClass.newInstance();
+        // inject properties if required
+        if (factory instanceof ConfigurableModelFactory) {
+          ((ConfigurableModelFactory) factory).setProperties(properties);
+        }
+        return factory;
+      } catch (final Exception e) {
+        throw new WroRuntimeException("Exception while loading WroModelFactory class:" + wroModelClassName, e);
       }
-    };
+    }
   }
 
   /**

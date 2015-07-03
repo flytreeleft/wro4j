@@ -121,6 +121,10 @@ public class TestDefaultWroModelFactory {
 
       public void destroy() {
       }
+
+      public boolean isExpired() {
+        return false;
+      }
     };
     victim = DefaultWroModelFactoryDecorator.decorate(decorated, Collections.EMPTY_LIST);
     injector.inject(victim);

@@ -474,6 +474,10 @@ public class WroTestUtils {
 
       public void destroy() {
       }
+
+      public boolean isExpired() {
+        return false;
+      }
     };
   }
 

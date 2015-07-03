@@ -10,6 +10,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import ro.isdc.wro.config.Context;
+import ro.isdc.wro.util.ExpiredObject;
+
+import java.io.File;
 
 
 /**
@@ -18,7 +22,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  * @author Alex Objelean
  * @created Created on Oct 30, 2008
  */
-public class Resource {
+public class Resource implements ExpiredObject {
   /**
    * The type of resource.
    */
@@ -32,6 +36,10 @@ public class Resource {
    * minimization is needed. Default value is true.
    */
   private boolean minimize = true;
+  /**
+   * The resource last modified timestamp
+   */
+  private long timestamp;
 
   /**
    * Empty constructor. Used by json deserializer.
@@ -144,6 +152,23 @@ public class Resource {
     this.minimize = minimize;
   }
 
+  /** @return The resource is whether expired or not */
+  public boolean isExpired() {
+    if (null != Context.get() && null != Context.get().getServletContext()) {
+      // only for the resources in the servlet container
+      String path = Context.get().getServletContext().getRealPath(uri);
+      if (null != path) {
+        File file = new File(path);
+        if (file.exists()) {
+          long oldTimestamp = timestamp;
+          timestamp = file.lastModified();
+
+          return oldTimestamp < timestamp;
+        }
+      }
+    }
+    return false;
+  }
 
   /**
    * {@inheritDoc}

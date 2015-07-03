@@ -1,11 +1,8 @@
 package ro.isdc.wro.model.factory;
 
-import java.util.List;
-
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import ro.isdc.wro.config.ReadOnlyContext;
 import ro.isdc.wro.manager.callback.LifecycleCallbackRegistry;
 import ro.isdc.wro.model.WroModel;
@@ -19,6 +16,8 @@ import ro.isdc.wro.util.AbstractDecorator;
 import ro.isdc.wro.util.DestroyableLazyInitializer;
 import ro.isdc.wro.util.StopWatch;
 import ro.isdc.wro.util.Transformer;
+
+import java.util.List;
 
 
 /**
@@ -111,6 +110,13 @@ public final class DefaultWroModelFactoryDecorator
   }
 
   public WroModel create() {
+    if (context.getConfig().isModelUpdateWhenDefFileChanged() && isExpired()) {
+      LOG.debug("WroModel is expired, recreate it");
+      modelInitializer.destroy();
+      LOG.debug("Reload cache");
+      // when model was updated, reload cache also
+      context.getConfig().reloadCache();
+    }
     return modelInitializer.get();
   }
 
@@ -121,5 +127,9 @@ public final class DefaultWroModelFactoryDecorator
     if (authorizationManager instanceof MutableResourceAuthorizationManager) {
       ((MutableResourceAuthorizationManager) authorizationManager).clear();
     }
+  }
+
+  public boolean isExpired() {
+    return getDecoratedObject().isExpired();
   }
 }

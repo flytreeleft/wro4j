@@ -3,10 +3,6 @@
  */
 package ro.isdc.wro.model.group;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.After;
@@ -19,6 +15,11 @@ import org.mockito.Mockito;
 import ro.isdc.wro.config.Context;
 import ro.isdc.wro.config.jmx.WroConfiguration;
 import ro.isdc.wro.model.resource.ResourceType;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -154,6 +155,31 @@ public class TestDefaultGroupExtractor {
     Mockito.when(request.getAttribute(DefaultGroupExtractor.ATTR_INCLUDE_PATH)).thenReturn("dispatched.type");
     assertEquals("dispatched", groupExtractor.getGroupName(request));
     assertEquals(null, groupExtractor.getResourceType(request));
+  }
+
+  @Test
+  public void testResourceConcat() {
+    final HttpServletRequest request = mockRequestForUri("/wro/concat.cjc");
+    Mockito.when(request.getContextPath()).thenReturn("/wro");
+    Map<String, String> paramMap = new HashMap<String, String>();
+    paramMap.put("a.js,b/c.js", "");
+    Mockito.when(request.getParameterMap()).thenReturn(paramMap);
+
+    assertEquals(Integer.toHexString("/a.js/b/c.js".hashCode()), groupExtractor.getGroupName(request));
+    assertEquals(ResourceType.JS, groupExtractor.getResourceType(request));
+    assertArrayEquals(new String[] { "/a.js", "/b/c.js" }, groupExtractor.splitConcatResources(request));
+  }
+
+  @Test
+  public void testUseURIAsGroupName() {
+    final HttpServletRequest request = mockRequestForUri("/wro/a.js");
+    Mockito.when(request.getContextPath()).thenReturn("/wro");
+    final WroConfiguration config = new WroConfiguration();
+    config.setUseURIAsGroupName(true);
+    Context.get().setConfig(config);
+
+    assertEquals("/a", groupExtractor.getGroupName(request));
+    assertEquals(ResourceType.JS, groupExtractor.getResourceType(request));
   }
 
   private HttpServletRequest mockRequestForUri(final String uri) {

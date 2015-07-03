@@ -159,6 +159,11 @@ public class TestSmartWroModelFactory {
       @Override
       public void destroy() {
       }
+
+      @Override
+      public boolean isExpired() {
+        return false;
+      }
     };
     final WroModelFactory workingModelFactory = new WroModelFactory() {
       @Override
@@ -168,6 +173,11 @@ public class TestSmartWroModelFactory {
 
       @Override
       public void destroy() {
+      }
+
+      @Override
+      public boolean isExpired() {
+        return false;
       }
     };
     final SmartWroModelFactory factory = new SmartWroModelFactory() {
@@ -218,6 +228,11 @@ public class TestSmartWroModelFactory {
 
     @Override
     public void destroy() {
+    }
+
+    @Override
+    public boolean isExpired() {
+      return false;
     }
   }
 }

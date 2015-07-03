@@ -34,4 +34,8 @@ public class LazyWroModelFactoryDecorator
   public void destroy() {
     getDecoratedObject().get().destroy();
   }
+
+  public boolean isExpired() {
+    return getDecoratedObject().get().isExpired();
+  }
 }

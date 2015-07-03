@@ -263,7 +263,7 @@ public class XmlModelFactory
           throws IOException {
         LOG.debug("build model from import: {}", modelLocation);
         return new AutoCloseInputStream(locatorFactory.locate(modelLocation));
-      };
+      }
     };
     // inject manually created modelFactory
     injector.inject(importedModelFactory);

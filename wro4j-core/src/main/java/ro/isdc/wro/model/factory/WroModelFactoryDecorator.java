@@ -33,4 +33,8 @@ public class WroModelFactoryDecorator extends AbstractDecorator<WroModelFactory>
   public void destroy() {
     getDecoratedObject().destroy();
   }
+
+  public boolean isExpired() {
+    return getDecoratedObject().isExpired();
+  }
 }

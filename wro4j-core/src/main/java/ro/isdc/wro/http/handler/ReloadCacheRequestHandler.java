@@ -45,6 +45,10 @@ public class ReloadCacheRequestHandler
     Context.get().getConfig().reloadCache();
     ResponseHeadersConfigurer.noCache().setHeaders(response);
     response.setStatus(HttpServletResponse.SC_OK);
+    // go back auto
+    if (response.getWriter() != null) { // for mock
+      response.getWriter().print("<html><script type=\"text/javascript\">history.back();</script></html>");
+    }
     LOG.debug("Cache is reloaded");
   }
 

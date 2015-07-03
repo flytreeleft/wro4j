@@ -593,6 +593,10 @@ public class TestWroFilter {
 
       public void destroy() {
       }
+
+      public boolean isExpired() {
+        return false;
+      }
     });
 
     final WroFilter filter = new WroFilter() {

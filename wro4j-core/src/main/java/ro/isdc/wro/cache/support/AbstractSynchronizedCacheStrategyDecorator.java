@@ -38,7 +38,16 @@ public abstract class AbstractSynchronizedCacheStrategyDecorator<K, V>
     V value = null;
     //invoke this callback method before the lock is acquired to avoid dead-lock
     onBeforeGet(key);
+    final boolean isCacheExpired = isCacheExpired(key);
     final ReadWriteLock lock = getLockForKey(key);
+    if (isCacheExpired) {
+      lock.readLock().lock();
+      try {
+        getDecoratedObject().put(key, null);
+      } finally {
+        lock.readLock().unlock();
+      }
+    }
     lock.readLock().lock();
     try {
       value = getDecoratedObject().get(key);
@@ -93,4 +102,11 @@ public abstract class AbstractSynchronizedCacheStrategyDecorator<K, V>
    * multiple times for the same key.
    */
   protected abstract V loadValue(final K key);
+
+  /**
+   * If resource is expired, the cache must be recreated
+   *
+   * @return true if the cache should be recreated
+   */
+  protected abstract boolean isCacheExpired(final K key);
 }

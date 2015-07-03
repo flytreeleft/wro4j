@@ -10,6 +10,8 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.After;
@@ -28,7 +30,9 @@ import ro.isdc.wro.manager.factory.BaseWroManagerFactory;
 import ro.isdc.wro.manager.factory.WroManagerFactory;
 import ro.isdc.wro.model.WroModel;
 import ro.isdc.wro.model.factory.WroModelFactory;
+import ro.isdc.wro.model.group.DefaultGroupExtractor;
 import ro.isdc.wro.model.group.Group;
+import ro.isdc.wro.model.group.GroupExtractor;
 import ro.isdc.wro.model.resource.Resource;
 import ro.isdc.wro.model.resource.ResourceType;
 import ro.isdc.wro.model.resource.locator.factory.SimpleUriLocatorFactory;
@@ -40,6 +44,9 @@ import ro.isdc.wro.model.resource.processor.factory.SimpleProcessorsFactory;
 import ro.isdc.wro.model.resource.processor.impl.css.CssMinProcessor;
 import ro.isdc.wro.model.resource.processor.impl.js.JSMinProcessor;
 import ro.isdc.wro.util.WroTestUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -138,7 +145,8 @@ public class TestGroupsProcessor {
     final CssMinProcessor cssMinProcessor = Mockito.spy(new CssMinProcessor());
     final BaseWroManagerFactory managerFactory = new BaseWroManagerFactory();
     managerFactory.setProcessorsFactory(new SimpleProcessorsFactory().addPostProcessor(cssMinProcessor));
-    managerFactory.setModelFactory(WroTestUtils.simpleModelFactory(new WroModel().addGroup(new Group("g1").addResource(Resource.create("/script.js")))));
+    managerFactory.setModelFactory(WroTestUtils.simpleModelFactory(
+        new WroModel().addGroup(new Group("g1").addResource(Resource.create("/script.js")))));
     initVictim(new WroConfiguration(), managerFactory);
     
     victim.process(new CacheKey("g1", ResourceType.JS, true));
@@ -149,14 +157,14 @@ public class TestGroupsProcessor {
   @Test
   public void shouldApplyEligibleMinimizeAwareProcessors()
       throws Exception {
-    final JSMinProcessor cssMinProcessor = Mockito.spy(new JSMinProcessor());
+    final JSMinProcessor jsMinProcessor = Mockito.spy(new JSMinProcessor());
     final BaseWroManagerFactory managerFactory = new BaseWroManagerFactory();
-    managerFactory.setProcessorsFactory(new SimpleProcessorsFactory().addPostProcessor(cssMinProcessor));
+    managerFactory.setProcessorsFactory(new SimpleProcessorsFactory().addPostProcessor(jsMinProcessor));
     managerFactory.setModelFactory(WroTestUtils.simpleModelFactory(new WroModel().addGroup(new Group("g1").addResource(Resource.create("/script.js")))));
     initVictim(new WroConfiguration(), managerFactory);
     
     victim.process(new CacheKey("g1", ResourceType.JS, true));
-    verify(cssMinProcessor).process(Mockito.any(Resource.class), Mockito.any(Reader.class), Mockito.any(Writer.class));
+    verify(jsMinProcessor).process(Mockito.any(Resource.class), Mockito.any(Reader.class), Mockito.any(Writer.class));
   }
   
   @Test
@@ -166,5 +174,43 @@ public class TestGroupsProcessor {
     victim.destroy();
     
     verify(mockPreProcessorExecutor).destroy();
+  }
+
+  @Test
+  public void shouldCreateGroupForFilterResource() {
+    final WroConfiguration config = new WroConfiguration();
+    config.setUseURIAsGroupName(true);
+    config.setCreateGroupForFilterResource(true);
+    initVictim(config);
+
+    CacheKey key = new CacheKey("/wro/a", ResourceType.JS, true);
+    victim.process(key);
+
+    key = new CacheKey("/wro/a", ResourceType.CSS, true);
+    victim.process(key);
+  }
+
+  @Test
+  public void shouldConcatResources()
+      throws IOException {
+    final WroConfiguration config = new WroConfiguration();
+    config.setUseURIAsGroupName(true);
+    config.setCreateGroupForFilterResource(true);
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    Mockito.when(request.getContextPath()).thenReturn("/wro");
+    Mockito.when(request.getRequestURI()).thenReturn("/wro/concat.cjc");
+    Map<String, String> paramMap = new HashMap<String, String>();
+    paramMap.put("a.js,b/c.js", "");
+    Mockito.when(request.getParameterMap()).thenReturn(paramMap);
+
+    Context.set(Context.webContext(request, response, null));
+    initVictim(config);
+
+    GroupExtractor groupExtractor = new DefaultGroupExtractor();
+    CacheKey key = new CacheKey(groupExtractor.getGroupName(request), ResourceType.JS, true);
+    victim.process(key);
+
+    Context.destroy();
   }
 }

@@ -5,6 +5,7 @@
 package ro.isdc.wro.config.jmx;
 
 import ro.isdc.wro.manager.factory.WroManagerFactory;
+import ro.isdc.wro.model.factory.WroModelFactory;
 
 
 /**
@@ -84,6 +85,10 @@ public enum ConfigConstants {
    */
   managerFactoryClassName,
   /**
+   * The fully qualified class name of the {@link WroModelFactory} implementation.
+   */
+  modelFactoryClassName,
+  /**
    * the name of MBean to be used by JMX to configure wro4j.
    */
   mbeanName,
@@ -95,5 +100,33 @@ public enum ConfigConstants {
    * After how many seconds the connection to servlet context and external url will be timed-out. This is useful to
    * avoid memory leaks when connection pool responsible for cache and model reload is destroyed.
    */
-  connectionTimeout
+  connectionTimeout,
+  /**
+   * If set true, will use request URI (start with "/") as group name
+   */
+  useURIAsGroupName,
+  /**
+   * The WroModel definition file
+   */
+  modelDefinitionFile,
+  /**
+   * If set true, WroModel will be recreated automatically when definition file was changed.
+   */
+  modelUpdateWhenDefFileChanged,
+  /**
+   * If set true, resource will be updated automatically when it was changed.
+   */
+  resourceUpdateWhenChanged,
+  /**
+   * If set true and {@link #useURIAsGroupName}==true, a group will be created for the filter request resource.
+   */
+  createGroupForFilterResource,
+  /**
+   * The suffix of the uri which concat specified resources
+   */
+  resourceConcatUriSuffix,
+  /**
+   * The splitter for concat resources
+   */
+  resourceConcatSplitter
 }

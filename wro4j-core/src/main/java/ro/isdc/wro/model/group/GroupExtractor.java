@@ -46,4 +46,10 @@ public interface GroupExtractor {
    * @return a part of the url path which encodes the groupName, resourceType and minimize option.
    */
   String encodeGroupUrl(final String groupName, final ResourceType resourceType, final boolean minimize);
+
+  /** @return Whether this request should concat resources */
+  boolean needToConcat(HttpServletRequest request);
+
+  /** @return split concat resources from this request */
+  String[] splitConcatResources(HttpServletRequest request);
 }

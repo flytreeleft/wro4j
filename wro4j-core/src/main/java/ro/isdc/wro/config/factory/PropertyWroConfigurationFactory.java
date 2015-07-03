@@ -56,12 +56,20 @@ public class PropertyWroConfigurationFactory
     config.setIgnoreFailingProcessor(valueAsBoolean(properties.get(ConfigConstants.ignoreFailingProcessor.name()), false));
     config.setEncoding(valueAsString(properties.get(ConfigConstants.encoding.name()), WroConfiguration.DEFAULT_ENCODING));
     config.setWroManagerClassName(valueAsString(properties.get(ConfigConstants.managerFactoryClassName.name())));
+    config.setWroModelClassName(valueAsString(properties.get(ConfigConstants.modelFactoryClassName.name())));
     config.setMbeanName(valueAsString(properties.get(ConfigConstants.mbeanName.name())));
     config.setHeader(valueAsString(properties.get(ConfigConstants.header.name())));
     config.setCacheGzippedContent(valueAsBoolean(properties.get(ConfigConstants.cacheGzippedContent.name()), false));
     config.setParallelPreprocessing(valueAsBoolean(properties.get(ConfigConstants.parallelPreprocessing.name()), false));
     config.setConnectionTimeout((int) valueAsLong(properties.get(ConfigConstants.connectionTimeout.name()),
         WroConfiguration.DEFAULT_CONNECTION_TIMEOUT));
+    config.setUseURIAsGroupName(valueAsBoolean(properties.get(ConfigConstants.useURIAsGroupName.name()), false));
+    config.setModelDefinitionFile(valueAsString(properties.get(ConfigConstants.modelDefinitionFile.name())));
+    config.setModelUpdateWhenDefFileChanged(valueAsBoolean(properties.get(ConfigConstants.modelUpdateWhenDefFileChanged.name()), false));
+    config.setResourceUpdateWhenChanged(valueAsBoolean(properties.get(ConfigConstants.resourceUpdateWhenChanged.name()), false));
+    config.setCreateGroupForFilterResource(valueAsBoolean(properties.get(ConfigConstants.createGroupForFilterResource.name()), false));
+    config.setResourceConcatUriSuffix(valueAsString(properties.get(ConfigConstants.resourceConcatUriSuffix.name())));
+    config.setResourceConcatSplitter(valueAsString(properties.get(ConfigConstants.resourceConcatSplitter.name())));
     LOG.debug("WroConfiguration created: {}", config);
     return config;
   }

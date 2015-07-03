@@ -64,4 +64,12 @@ public class GroupExtractorDecorator
   public String encodeGroupUrl(final String groupName, final ResourceType resourceType, final boolean minimize) {
     return decorated.encodeGroupUrl(groupName, resourceType, minimize);
   }
+
+  public boolean needToConcat(HttpServletRequest request) {
+    return decorated.needToConcat(request);
+  }
+
+  public String[] splitConcatResources(HttpServletRequest request) {
+    return decorated.splitConcatResources(request);
+  }
 }

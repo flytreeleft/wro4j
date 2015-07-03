@@ -3,12 +3,9 @@
  */
 package ro.isdc.wro.model.group.processor;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
@@ -22,13 +19,17 @@ import ro.isdc.wro.model.WroModel;
 import ro.isdc.wro.model.WroModelInspector;
 import ro.isdc.wro.model.factory.WroModelFactory;
 import ro.isdc.wro.model.group.Group;
+import ro.isdc.wro.model.group.GroupExtractor;
 import ro.isdc.wro.model.group.Inject;
 import ro.isdc.wro.model.resource.Resource;
+import ro.isdc.wro.model.resource.ResourceType;
 import ro.isdc.wro.model.resource.processor.ResourcePostProcessor;
 import ro.isdc.wro.model.resource.processor.ResourcePreProcessor;
 import ro.isdc.wro.model.resource.processor.decorator.DefaultProcessorDecorator;
 import ro.isdc.wro.model.resource.processor.decorator.ProcessorDecorator;
 import ro.isdc.wro.model.resource.processor.factory.ProcessorsFactory;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 /**
@@ -47,6 +48,8 @@ public class GroupsProcessor {
   private WroModelFactory modelFactory;
   @Inject
   private ReadOnlyContext context;
+  @Inject
+  private GroupExtractor groupExtractor;
   @Inject
   private Injector injector;
 
@@ -69,15 +72,28 @@ public class GroupsProcessor {
           cacheKey.getGroupName(), cacheKey.getType());
       // find processed result for a group
       final WroModel model = modelFactory.create();
-      final Group group = new WroModelInspector(model).getGroupByName(cacheKey.getGroupName());
+      Group group = new WroModelInspector(model).getGroupByName(cacheKey.getGroupName());
       if (group == null) {
-        throw new WroRuntimeException("No such group available in the model: " + cacheKey.getGroupName());
+        if (!context.getConfig().isUseURIAsGroupName() || !context.getConfig().isCreateGroupForFilterResource()) {
+          throw new WroRuntimeException("No such group available in the model: " + cacheKey.getGroupName());
+        } else {
+          group = createNewGroup(cacheKey);
+          model.addGroup(group);
+        }
       }
-      final Group filteredGroup = group.collectResourcesOfType(cacheKey.getType());
+      Group filteredGroup = group.collectResourcesOfType(cacheKey.getType());
       if (filteredGroup.getResources().isEmpty()) {
-        LOG.debug("No resources found in group: {} and resource type: {}", group.getName(), cacheKey.getType());
-        if (!context.getConfig().isIgnoreEmptyGroup()) {
-          throw new WroRuntimeException("No resources found in group: " + group.getName());
+        if (!group.getResources().isEmpty()
+              && context.getConfig().isUseURIAsGroupName()
+              && context.getConfig().isCreateGroupForFilterResource()) {
+          // maybe css and js has the same name, they will be added to the same group
+          filteredGroup = createNewGroup(cacheKey);
+          group.addResource(filteredGroup.getResources().get(0));
+        } else {
+          LOG.debug("No resources found in group: {} and resource type: {}", group.getName(), cacheKey.getType());
+          if (!context.getConfig().isIgnoreEmptyGroup()) {
+            throw new WroRuntimeException("No resources found in group: " + group.getName());
+          }
         }
       }
       final String result = preProcessorExecutor.processAndMerge(filteredGroup.getResources(), cacheKey.isMinimize());
@@ -153,5 +169,30 @@ public class GroupsProcessor {
    */
   public void destroy() {
     preProcessorExecutor.destroy();
+  }
+
+  protected Group createNewGroup(CacheKey cacheKey) {
+    HttpServletRequest request = context.getRequest();
+    Group group = new Group(cacheKey.getGroupName());
+    ResourceType type = cacheKey.getType();
+
+    if (groupExtractor.needToConcat(request)) {
+      String[] concatResources = groupExtractor.splitConcatResources(request);
+
+      for (String res : concatResources) {
+        Resource resource = Resource.create(res, type);
+
+        resource.setMinimize(cacheKey.isMinimize());
+        group.addResource(resource);
+      }
+    } else {
+      String uri = group.getName() + "." + type.name().toLowerCase();
+      Resource resource = Resource.create(uri, type);
+
+      resource.setMinimize(cacheKey.isMinimize());
+      group.addResource(resource);
+    }
+
+    return group;
   }
 }

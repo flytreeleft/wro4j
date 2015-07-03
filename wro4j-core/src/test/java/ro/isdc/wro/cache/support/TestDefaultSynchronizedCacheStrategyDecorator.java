@@ -1,26 +1,10 @@
 package ro.isdc.wro.cache.support;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.concurrent.TimeUnit;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.apache.commons.io.FileUtils;
+import org.junit.*;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
 import ro.isdc.wro.cache.CacheKey;
 import ro.isdc.wro.cache.CacheStrategy;
 import ro.isdc.wro.cache.CacheValue;
@@ -42,6 +26,17 @@ import ro.isdc.wro.util.ObjectDecorator;
 import ro.isdc.wro.util.SchedulerHelper;
 import ro.isdc.wro.util.WroTestUtils;
 
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+
 
 /**
  * @author Alex Objelean
@@ -49,6 +44,7 @@ import ro.isdc.wro.util.WroTestUtils;
 public class TestDefaultSynchronizedCacheStrategyDecorator {
   private static final String GROUP_NAME = "g1";
   private static final String RESOURCE_URI = "/test.js";
+  private static final String RESOURCE_MAYBE_CHANGED_URI = "/maybe-changed.js";
 
   private DefaultSynchronizedCacheStrategyDecorator victim;
   @Mock
@@ -87,7 +83,10 @@ public class TestDefaultSynchronizedCacheStrategyDecorator {
   }
 
   public Injector createInjector() {
-    final WroModel model = new WroModel().addGroup(new Group(GROUP_NAME).addResource(Resource.create(RESOURCE_URI)));
+    final Group group = new Group(GROUP_NAME);
+    group.addResource(Resource.create(RESOURCE_URI));
+    group.addResource(Resource.create(RESOURCE_MAYBE_CHANGED_URI));
+    final WroModel model = new WroModel().addGroup(group);
     final WroModelFactory modelFactory = WroTestUtils.simpleModelFactory(model);
     final UriLocatorFactory locatorFactory = WroTestUtils.createResourceMockingLocatorFactory();
     final BaseWroManagerFactory factory = new BaseWroManagerFactory().setModelFactory(modelFactory).setUriLocatorFactory(
@@ -202,5 +201,35 @@ public class TestDefaultSynchronizedCacheStrategyDecorator {
     when(mockResourceWatcher.tryAsyncCheck(Mockito.eq(key))).thenReturn(true);
     victim.get(key);
     assertTrue(victim.wasCheckedForChange(key));
+  }
+
+  @Test
+  public void shouldReloadCacheWhenExpired()
+      throws IOException {
+    File resourceFile = new File("resource.js");
+
+    final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+    final HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+    final ServletContext servletContext = Mockito.mock(ServletContext.class);
+    when(servletContext.getRealPath(RESOURCE_MAYBE_CHANGED_URI)).thenReturn(resourceFile.getAbsolutePath());
+    final FilterConfig filterConfig = Mockito.mock(FilterConfig.class);
+    when(filterConfig.getServletContext()).thenReturn(servletContext);
+
+    Context.set(Context.webContext(request, response, filterConfig));
+    Context.get().getConfig().setResourceUpdateWhenChanged(true);
+    final CacheKey key = new CacheKey(GROUP_NAME, ResourceType.JS, true);
+
+    victim.get(key);
+    CacheValue oldCacheValue = victim.getDecoratedObject().get(key);
+    try {
+      FileUtils.touch(resourceFile);
+      victim.get(key);
+      CacheValue newCacheValue = victim.getDecoratedObject().get(key);
+
+      assertNotEquals(oldCacheValue, newCacheValue);
+    } finally {
+      Context.destroy();
+      FileUtils.deleteQuietly(resourceFile);
+    }
   }
 }

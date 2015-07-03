@@ -15,6 +15,10 @@ import ro.isdc.wro.cache.CacheKey;
 import ro.isdc.wro.cache.CacheStrategy;
 import ro.isdc.wro.cache.CacheValue;
 import ro.isdc.wro.config.ReadOnlyContext;
+import ro.isdc.wro.model.WroModel;
+import ro.isdc.wro.model.WroModelInspector;
+import ro.isdc.wro.model.factory.WroModelFactory;
+import ro.isdc.wro.model.group.Group;
 import ro.isdc.wro.model.group.Inject;
 import ro.isdc.wro.model.group.processor.GroupsProcessor;
 import ro.isdc.wro.model.resource.support.MutableResourceAuthorizationManager;
@@ -45,6 +49,8 @@ public class DefaultSynchronizedCacheStrategyDecorator
   private ReadOnlyContext context;
   @Inject
   private ResourceWatcher resourceWatcher;
+  @Inject
+  private WroModelFactory modelFactory;
 
   /**
    * Holds the keys that were checked for change. As long as a key is contained in this set, it won't be checked again.
@@ -177,5 +183,17 @@ public class DefaultSynchronizedCacheStrategyDecorator
    */
   boolean wasCheckedForChange(final CacheKey key) {
     return checkedKeys.contains(key);
+  }
+
+  @Override
+  protected boolean isCacheExpired(CacheKey key) {
+    if (!context.getConfig().isResourceUpdateWhenChanged()) {
+      return false;
+    }
+
+    final WroModel model = modelFactory.create();
+    Group group = new WroModelInspector(model).getGroupByName(key.getGroupName());
+
+    return null != group && group.containsExpiredResource();
   }
 }

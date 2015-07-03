@@ -164,7 +164,13 @@ public class JarWildcardStreamLocator
       }
       return new BufferedInputStream(new ByteArrayInputStream(out.toByteArray()));
     } finally {
-      IOUtils.closeQuietly(jarFile);
+      if (null != jarFile) {
+        try {
+          jarFile.close();
+        } catch (Exception ignore) {
+          // ignore exception
+        }
+      }
     }
   }
 }

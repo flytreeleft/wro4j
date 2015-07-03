@@ -81,6 +81,36 @@ public class TestSynchronizedCacheStrategyDecorator {
     awaitTermination();
     Assert.assertEquals(2, count.get());
   }
+
+  @Test
+  public void shouldReloadCacheWhenExpired() {
+    final int reloadWhenCountEqual = 2;
+    victim = new AbstractSynchronizedCacheStrategyDecorator<String, String>(decorated) {
+      private int reloadCount;
+      @Override
+      protected String loadValue(final String key) {
+        // increase count number after first loaded
+        return "value-" + (reloadCount > 0 ? reloadCount : reloadCount++);
+      }
+
+      @Override
+      protected boolean isCacheExpired(String key) {
+        if (reloadCount >= reloadWhenCountEqual) {
+          return true;
+        } else if (reloadCount > 0) {
+          // when cache was loaded one time, then increase count number
+          reloadCount++;
+        }
+        return false;
+      }
+    };
+
+    String key = "key";
+    for (int i = 0; i < reloadWhenCountEqual; i++) {
+      Assert.assertEquals("value-0", victim.get(key));
+    }
+    Assert.assertEquals("value-" + reloadWhenCountEqual, victim.get(key));
+  }
   
   protected AtomicInteger createSlowCountingDecorator() {
     final AtomicInteger count = new AtomicInteger();
@@ -94,6 +124,11 @@ public class TestSynchronizedCacheStrategyDecorator {
           throw new RuntimeException(e);
         }
         return "value-" + key;
+      }
+
+      @Override
+      protected boolean isCacheExpired(String key) {
+        return false;
       }
     };
     return count;

@@ -13,30 +13,7 @@ import ro.isdc.wro.extensions.processor.css.RhinoLessCssProcessor;
 import ro.isdc.wro.extensions.processor.css.RubySassCssProcessor;
 import ro.isdc.wro.extensions.processor.css.SassCssProcessor;
 import ro.isdc.wro.extensions.processor.css.YUICssCompressorProcessor;
-import ro.isdc.wro.extensions.processor.js.BeautifyJsProcessor;
-import ro.isdc.wro.extensions.processor.js.CJsonProcessor;
-import ro.isdc.wro.extensions.processor.js.CoffeeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.DojoShrinksafeCompressorProcessor;
-import ro.isdc.wro.extensions.processor.js.DustJsProcessor;
-import ro.isdc.wro.extensions.processor.js.EmberJsProcessor;
-import ro.isdc.wro.extensions.processor.js.GoogleClosureCompressorProcessor;
-import ro.isdc.wro.extensions.processor.js.HandlebarsJsProcessor;
-import ro.isdc.wro.extensions.processor.js.HoganJsProcessor;
-import ro.isdc.wro.extensions.processor.js.JsHintProcessor;
-import ro.isdc.wro.extensions.processor.js.JsLintProcessor;
-import ro.isdc.wro.extensions.processor.js.JsonHPackProcessor;
-import ro.isdc.wro.extensions.processor.js.LiterateCoffeeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.NgAnnotateProcessor;
-import ro.isdc.wro.extensions.processor.js.NgMinProcessor;
-import ro.isdc.wro.extensions.processor.js.NodeCoffeeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.NodeLiterateCoffeeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.NodeTypeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.PackerJsProcessor;
-import ro.isdc.wro.extensions.processor.js.RhinoCoffeeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.RhinoLiterateCoffeeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.RhinoTypeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.TypeScriptProcessor;
-import ro.isdc.wro.extensions.processor.js.UglifyJsProcessor;
+import ro.isdc.wro.extensions.processor.js.*;
 import ro.isdc.wro.model.resource.processor.ResourcePostProcessor;
 import ro.isdc.wro.model.resource.processor.ResourcePreProcessor;
 import ro.isdc.wro.model.resource.processor.decorator.LazyProcessorDecorator;
@@ -312,6 +289,12 @@ public class DefaultProcessorProvider
           return new NgAnnotateProcessor();
         }
       }));
+    map.put(RequireJsExtractProcessor.ALIAS, new LazyProcessorDecorator(new LazyInitializer<ResourcePreProcessor>() {
+      @Override
+      protected ResourcePreProcessor initialize() {
+        return new RequireJsExtractProcessor();
+      }
+    }));
     return map;
   }
 }

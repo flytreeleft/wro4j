@@ -154,4 +154,81 @@ public interface WroConfigurationMBean {
    * @return value of flag that controls override of resource minification
    */
   boolean isMinimizeEnabled();
+
+  /**
+   * @param useURI
+   *          set flag whether using request URI (start with "/") as group name
+   */
+  void setUseURIAsGroupName(boolean useURI);
+
+  /**
+   * @return true if using request URI (start with "/") as group name
+   */
+  boolean isUseURIAsGroupName();
+
+  /**
+   * @param modelDefinitionFile
+   *          set WroModel definition file path
+   */
+  void setModelDefinitionFile(String modelDefinitionFile);
+
+  /**
+   * @return WroModel definition file path
+   */
+  String getModelDefnitionFile();
+
+  /**
+   * @param updateWhenChanged
+   *          set flag whether recreating WroModel or not when definition file was changed
+   */
+  void setModelUpdateWhenDefFileChanged(boolean updateWhenChanged);
+
+  /**
+   * @return WroModel will be recreated if return true
+   */
+  boolean isModelUpdateWhenDefFileChanged();
+
+  /**
+   * @param updateWhenChanged
+   *          set flag whether updating resource or not when it was changed
+   */
+  void setResourceUpdateWhenChanged(boolean updateWhenChanged);
+
+  /**
+   * @return update resource if return true
+   */
+  boolean isResourceUpdateWhenChanged();
+
+  /**
+   * @param createGroup
+   *          set flag whether creating group for the filter resource or not
+   */
+  void setCreateGroupForFilterResource(boolean createGroup);
+
+  /**
+   * @return if true, creating group for the filter resource
+   */
+  boolean isCreateGroupForFilterResource();
+
+  /**
+   * @param suffix
+   *          the suffix of the uri which concats specified resources
+   */
+  void setResourceConcatUriSuffix(String suffix);
+
+  /**
+   * @return suffix of the resources concat uri
+   */
+  String getResourceConcatUriSuffix();
+
+  /**
+   * @param splitter
+   *          The splitter for resources that will be concated
+   */
+  void setResourceConcatSplitter(String splitter);
+
+  /**
+   * @return splitter of concated resources
+   */
+  String getResourceConcatSplitter();
 }

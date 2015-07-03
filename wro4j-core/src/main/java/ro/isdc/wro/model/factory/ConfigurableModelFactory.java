@@ -74,4 +74,8 @@ public class ConfigurableModelFactory
   public void destroy() {
     getConfiguredStrategy().destroy();
   }
+
+  public boolean isExpired() {
+    return getConfiguredStrategy().isExpired();
+  }
 }
