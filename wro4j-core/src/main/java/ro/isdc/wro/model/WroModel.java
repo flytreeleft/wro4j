@@ -41,8 +41,9 @@ public final class WroModel {
   /**
    * @return a readonly collection of groups.
    */
-  public final Collection<Group> getGroups() {
-    return Collections.unmodifiableSet(groups);
+  public synchronized final Collection<Group> getGroups() {
+    // use a new list to avoid ConcurrentModificationException when the WroModel#addGroup method is called.
+    return Collections.unmodifiableSet(new HashSet<Group>(groups));
   }
 
   /**
@@ -125,7 +126,7 @@ public final class WroModel {
    * Add a single group to the model.
    * @param group a not null {@link Group}.
    */
-  public WroModel addGroup(final Group group) {
+  public synchronized WroModel addGroup(final Group group) {
     Validate.notNull(group);
     groups.add(group);
     return this;

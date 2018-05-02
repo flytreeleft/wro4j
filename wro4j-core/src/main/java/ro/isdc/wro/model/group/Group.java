@@ -175,7 +175,7 @@ public final class Group {
   /**
    * @return the readonly list of resources.
    */
-  public List<Resource> getResources() {
+  public synchronized List<Resource> getResources() {
     // use a new list to avoid ConcurrentModificationException when the Group#replace method is called.
     return Collections.unmodifiableList(new ArrayList<Resource>(resources));
   }
