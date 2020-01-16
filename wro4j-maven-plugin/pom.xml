@@ -4,7 +4,7 @@
     <parent>
         <groupId>ro.isdc.wro4j</groupId>
         <artifactId>wro4j-parent</artifactId>
-        <version>1.7.8-enhance</version>
+        <version>1.7.8.1-enhance</version>
     </parent>
     <artifactId>wro4j-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
@@ -56,7 +56,7 @@
             <artifactId>plexus-build-api</artifactId>
             <version>0.0.7</version>
         </dependency>
-	     	<!-- Add explicitly compile scope, because it is by default test--> 
+	     	<!-- Add explicitly compile scope, because it is by default test-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>

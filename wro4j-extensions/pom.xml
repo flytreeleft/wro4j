@@ -4,7 +4,7 @@
     <parent>
         <groupId>ro.isdc.wro4j</groupId>
         <artifactId>wro4j-parent</artifactId>
-        <version>1.7.8-enhance</version>
+        <version>1.7.8.1-enhance</version>
     </parent>
     <artifactId>wro4j-extensions</artifactId>
     <packaging>jar</packaging>
@@ -167,7 +167,7 @@
         </plugins>
         <pluginManagement>
             <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven 
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven
                     build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
