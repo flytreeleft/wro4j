@@ -200,6 +200,7 @@ public class GoogleClosureCompressorProcessor
     options.setOutputCharset(getEncoding());
     // set it to warning, otherwise compiler will fail
     options.setWarningLevel(DiagnosticGroups.CHECK_VARIABLES, CheckLevel.WARNING);
+    options.setLanguageIn(CompilerOptions.LanguageMode.ECMASCRIPT5);
     return options;
   }
 
