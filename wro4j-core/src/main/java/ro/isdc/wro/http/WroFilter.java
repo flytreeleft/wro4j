@@ -340,7 +340,9 @@ public class WroFilter
    */
   private boolean isFilterActive(final HttpServletRequest request) {
     // prevent StackOverflowError by skipping the already included wro request
-    return enable && !DispatcherStreamLocator.isIncludedRequest(request);
+    return enable
+           && !DispatcherStreamLocator.isIncludedRequest(request)
+           && !request.getRequestURI().matches(".+\\.min\\.(css|js)$");
   }
 
   /**
