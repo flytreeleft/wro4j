@@ -67,8 +67,9 @@ public class CssDataUriPreProcessor
   protected String replaceImageUrl(final String cssUri, final String imageUrl) {
     Validate.notNull(uriLocatorFactory);
     LOG.debug("replace url for image: {} from css: {}", imageUrl, cssUri);
-    final String cleanImageUrl = cleanImageUrl(imageUrl);
-    final String fileName = FilenameUtils.getName(imageUrl);
+    final String imageUrlWithoutQuery = imageUrl.replaceAll("\\?.*", "");
+    final String cleanImageUrl = cleanImageUrl(imageUrlWithoutQuery);
+    final String fileName = FilenameUtils.getName(imageUrlWithoutQuery);
     String fullPath = cleanImageUrl;
     /**
      * Allow dataUri transformation of absolute url's using http(s) protocol. All url's protocol are intentionally not
